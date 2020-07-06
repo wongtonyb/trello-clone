@@ -1,9 +1,11 @@
 const express = require("express");
+const app = express();
 const { ApolloServer, gql } = require("apollo-server-express"); //apollo-server via express to communicate with MongoDB
 const { PubSub } = require("apollo-server"); // For Subscription
 const mongoose = require("mongoose"); // MongoDB ORM
 const merge = require("lodash/merge");
 const { createServer } = require("http");
+const cors = require("cors");
 
 // Type Definitions and Resolvers for List and Card
 const { listResolvers, listTypeDefs } = require("./list");
@@ -66,6 +68,9 @@ const resolvers = merge(
   SubscriptionsResolvers
 );
 
+//allow cross-origin request (client and server running on different ports, this connects them)
+// app.use(cors());
+
 //connect to mlab database
 mongoose
   .connect(
@@ -84,13 +89,7 @@ mongoose
         publisher: pubsub,
         SUBSCRIPTION_CONSTANTS: SUBSCRIPTION_CONSTANTS,
       }),
-      playground: {
-        tabs: [
-          {
-            endpoint: "/graphql",
-          },
-        ],
-      },
+      playground: true,
     });
 
     const app = express();

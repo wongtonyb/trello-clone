@@ -1,8 +1,8 @@
-fetchCardsBySectionId = async (__, args, cxt) => {
+fetchCardsByListId = async (__, args, cxt) => {
   try {
-    const sectionId = args.request.sectionId;
+    const listId = args.request.listId;
 
-    const cards = await cxt.card.getCardBySectionId(sectionId);
+    const cards = await cxt.card.getCardByListId(listId);
 
     return cards;
   } catch (e) {
@@ -12,5 +12,5 @@ fetchCardsBySectionId = async (__, args, cxt) => {
 };
 
 module.exports = {
-  fetchCardsBySectionId,
+  fetchCardsByListId,
 };

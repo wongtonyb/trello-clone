@@ -6,11 +6,7 @@ const listSchema = new Mongoose.Schema({
     type: String,
     required: true,
   },
-  label: {
-    type: String,
-    required: true,
-  },
-  description: String,
+
   pos: {
     type: Number,
     required: true,

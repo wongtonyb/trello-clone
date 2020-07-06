@@ -4,17 +4,15 @@ const { gql } = require("apollo-server-express");
 
 const cardTypeDefs = gql`
   type Card {
-    id: ID
-    title: String!
-    label: String!
-    description: String
-    pos: Int
-    sectionId: String!
+    id: ID!
+    description: String!
+    pos: Int!
+    listId: ID!
   }
 
   type Query {
     card: String
-    fetchCardsBySectionId(request: cardSectionInput): [Card]
+    fetchCardsByListId(request: cardListInput): [Card]
   }
 
   type Mutation {
@@ -23,18 +21,17 @@ const cardTypeDefs = gql`
   }
 
   input insertCardInput {
-    title: String!
-    label: String!
-    sectionId: ID!
+    description: String!
     pos: Int!
+    listId: ID!
   }
   input updateCardPosInput {
     cardId: String!
-    sectionId: String!
+    listId: String!
     pos: Int!
   }
-  input cardSectionInput {
-    sectionId: String!
+  input cardListInput {
+    listId: String!
   }
 `;
 

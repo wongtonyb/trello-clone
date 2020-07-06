@@ -1,10 +1,9 @@
 const insertCard = async (__, args, cxt) => {
   try {
     const cardInfo = {
-      title: args.request.title,
-      label: args.request.label,
+      description: args.request.description,
       pos: args.request.pos,
-      sectionId: args.request.sectionId,
+      listId: args.request.listId,
     };
 
     const card = await cxt.card.insertCard(cardInfo);
@@ -25,8 +24,8 @@ const updateCardPos = async (__, args, cxt) => {
   try {
     const cardId = args.request.cardId;
     const pos = args.request.pos;
-    const sectionId = args.request.sectionId;
-    const card = await cxt.card.updatePos(cardId, pos, sectionId);
+    const listId = args.request.listId;
+    const card = await cxt.card.updatePos(cardId, pos, listId);
 
     return card;
   } catch (e) {

@@ -7,9 +7,7 @@ const listTypeDefs = gql`
   type List {
     id: ID!
     title: String!
-    label: String!
     pos: Int!
-    description: String
     cards: [Card]
   }
 
@@ -24,7 +22,6 @@ const listTypeDefs = gql`
 
   input insertListInput {
     title: String!
-    label: String!
     pos: Int!
   }
 

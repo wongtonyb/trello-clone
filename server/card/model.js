@@ -2,22 +2,17 @@ const Mongoose = require("mongoose");
 
 const cardSchema = new Mongoose.Schema(
   {
-    title: {
+    description: {
       type: String,
       required: true,
     },
-    label: {
-      type: String,
-      required: true,
-    },
-    description: String,
     pos: {
       type: Number,
       required: true,
     },
-    sectionId: {
-      type: Mongoose.Schema.Types.ObjectId,
-      ref: "Section",
+    listId: {
+      type: String,
+      required: true,
     },
   },
   { timestamps: true }
@@ -30,11 +25,11 @@ class Card {
     return card.save();
   }
 
-  static getCardBySectionId(sectionId) {
-    return this.find({ sectionId }).sort("pos").exec();
+  static getCardByListId(listId) {
+    return this.find({ listId }).sort("pos").exec();
   }
 
-  static updatePos(cardId, pos, sectionId) {
+  static updatePos(cardId, pos, listId) {
     return this.findOneAndUpdate(
       {
         _id: Mongoose.mongo.ObjectID(cardId),
@@ -42,7 +37,7 @@ class Card {
       {
         $set: {
           pos,
-          sectionId,
+          listId,
         },
       }
     ).exec();
