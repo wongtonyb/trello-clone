@@ -15,4 +15,18 @@ const onListPosChangeSubscription = gql`
   }
 `;
 
-export { onListPosChangeSubscription };
+const onListAddedSubscription = gql`
+  subscription {
+    listAdded {
+      id
+      title
+      pos
+      cards {
+        id
+        description
+        pos
+      }
+    }
+  }
+`;
+export { onListPosChangeSubscription, onListAddedSubscription };

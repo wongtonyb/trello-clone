@@ -14,4 +14,18 @@ const updateListPosMutation = gql`
   }
 `;
 
-export { updateListPosMutation };
+const insertListMutation = gql`
+  mutation($title: String!, $pos: Int!) {
+    insertList(request: { title: $title, pos: $pos }) {
+      id
+      title
+      pos
+      cards {
+        description
+        pos
+      }
+    }
+  }
+`;
+
+export { updateListPosMutation, insertListMutation };

@@ -24,7 +24,7 @@ const updateListPos = async (__, args, cxt) => {
     const pos = args.request.pos;
 
     const list = await cxt.list.updatePos(listId, pos);
-    console.log(list);
+    // console.log(list);
     cxt.publisher.publish(cxt.SUBSCRIPTION_CONSTANTS.ON_LIST_POS_CHANGE, {
       onListPosChange: list,
     });

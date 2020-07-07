@@ -4,10 +4,16 @@ import { graphql } from "react-apollo";
 import * as compose from "lodash.flowright";
 import { client } from "../App.js";
 
+//components
+import AddList from "./AddList";
+
 //queries
 import { getListsQuery } from "./queries/queries";
 import { updateListPosMutation } from "./queries/mutations";
-import { onListPosChangeSubscription } from "./queries/subscriptions";
+import {
+  onListPosChangeSubscription,
+  onListAddedSubscription,
+} from "./queries/subscriptions";
 
 class Board extends Component {
   constructor(props) {
@@ -20,6 +26,8 @@ class Board extends Component {
     this.getCardPayload = this.getCardPayload.bind(this);
     this.sortListByPos = this.sortListByPos.bind(this);
     this.updateListPos = this.updateListPos.bind(this);
+    this.addList = this.addList.bind(this);
+    this.addCard = this.addCard.bind(this);
   }
 
   async componentDidMount() {
@@ -30,12 +38,14 @@ class Board extends Component {
       this.setState({ lists: data.getLists });
       //setup subscription point
       this.subscribeToListPosChange(this.updateListPos);
+      this.subscribeToListAdded(this.addList);
     } catch (err) {
       console.error(err);
     }
   }
 
   //upon subscription hit, execute updateListPos
+
   subscribeToListPosChange = (updateListPos) => {
     client
       .subscribe({
@@ -48,12 +58,34 @@ class Board extends Component {
       });
   };
 
+  subscribeToListAdded = (addList) => {
+    client
+      .subscribe({
+        query: onListAddedSubscription,
+      })
+      .subscribe({
+        next({ data }) {
+          addList(data.listAdded);
+        },
+      });
+  };
+
   //execution after subscription triggered
   //replace old list with new list
   updateListPos(updatedList) {
-    let updatedLists = this.state.lists;
-    updatedLists[updatedList.pos] = updatedList;
-    this.setState(updatedLists);
+    if (updatedList) {
+      let updatedLists = this.state.lists;
+      console.log("updateListPos", updatedLists);
+      updatedLists[updatedList.pos] = updatedList;
+      this.setState(updatedLists);
+    }
+  }
+
+  addList(newList) {
+    let prevLists = this.state.lists;
+    this.setState({
+      lists: [...prevLists, newList],
+    });
   }
 
   sortListByPos() {
@@ -92,14 +124,12 @@ class Board extends Component {
     console.log("oncarddrop");
   }
 
+  addCard() {}
+
   render() {
     return (
       <div className="card-scene">
-        <form>
-          <label>Add a new list!</label>
-          <input placeholder="Title" />
-          <button>Add</button>
-        </form>
+        <AddList lists={this.state.lists} />
         <Container
           className="main-container"
           orientation="horizontal"
@@ -137,7 +167,7 @@ class Board extends Component {
                       );
                     })}
                     <form>
-                      <label>Add a new card!</label>
+                      <label onSubmit={this.addCard}>Add a new card!</label>
                       <input placeholder="Description" />
                       <button>Add</button>
                     </form>
