@@ -8,7 +8,7 @@ import ApolloClient from "apollo-client";
 import { WebSocketLink } from "apollo-link-ws";
 
 //components
-import Example from "./components/Example";
+// import Example from "./components/Example";
 import Board from "./components/Board";
 
 // https://www.apollographql.com/docs/react/data/subscriptions/
@@ -36,7 +36,7 @@ const link = split(
 );
 //subscriptions are send to wsLink, rest (Queries & Mutations) are send to httpLink
 
-const client = new ApolloClient({
+export const client = new ApolloClient({
   link,
   cache: new InMemoryCache(),
 });
