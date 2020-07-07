@@ -39,7 +39,8 @@ class Card {
           pos,
           listId,
         },
-      }
+      },
+      { new: true }
     ).exec();
   }
 }

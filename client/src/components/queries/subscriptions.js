@@ -29,4 +29,20 @@ const onListAddedSubscription = gql`
     }
   }
 `;
-export { onListPosChangeSubscription, onListAddedSubscription };
+
+const onCardPosChangeSubscriptions = gql`
+  subscription {
+    onCardPosChange {
+      id
+      description
+      pos
+      listId
+    }
+  }
+`;
+
+export {
+  onListPosChangeSubscription,
+  onListAddedSubscription,
+  onCardPosChangeSubscriptions,
+};

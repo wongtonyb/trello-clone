@@ -31,6 +31,8 @@ const listTypeDefs = gql`
   }
 `;
 
+//Query and Mutation names must be the same as the resolvers
+
 //Resolver Definition
 const listResolvers = {
   Query: {

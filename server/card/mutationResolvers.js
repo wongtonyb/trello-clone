@@ -25,7 +25,12 @@ const updateCardPos = async (__, args, cxt) => {
     const cardId = args.request.cardId;
     const pos = args.request.pos;
     const listId = args.request.listId;
+
     const card = await cxt.card.updatePos(cardId, pos, listId);
+
+    cxt.publisher.publish(cxt.SUBSCRIPTION_CONSTANTS.ON_CARD_POS_CHANGE, {
+      onCardPosChange: card,
+    });
 
     return card;
   } catch (e) {
