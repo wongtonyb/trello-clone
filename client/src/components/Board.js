@@ -6,6 +6,7 @@ import { client } from "../App.js";
 
 //components
 import AddList from "./AddList";
+import AddCard from "./AddCard";
 
 //queries
 import { getListsQuery } from "./queries/queries";
@@ -16,7 +17,8 @@ import {
 import {
   onListPosChangeSubscription,
   onListAddedSubscription,
-  onCardPosChangeSubscriptions,
+  onCardPosChangeSubscription,
+  onCardAddedSubscription,
 } from "./queries/subscriptions";
 
 class Board extends Component {
@@ -35,7 +37,6 @@ class Board extends Component {
     this.onColumnDrop = this.onColumnDrop.bind(this);
     this.onCardDrop = this.onCardDrop.bind(this);
     this.getCardPayload = this.getCardPayload.bind(this);
-    this.sortListByPos = this.sortListByPos.bind(this);
     this.updateListPos = this.updateListPos.bind(this);
     this.addList = this.addList.bind(this);
     this.updateCard = this.updateCard.bind(this);
@@ -52,6 +53,7 @@ class Board extends Component {
       this.subscribeToListPosChange(this.updateListPos);
       this.subscribeToListAdded(this.addList);
       this.subscribeToCardPosChange(this.updateCard);
+      this.subscribeToCardAdded(this.addCard);
     } catch (err) {
       console.error(err);
     }
@@ -103,7 +105,7 @@ class Board extends Component {
   subscribeToCardPosChange = (updateCard) => {
     client
       .subscribe({
-        query: onCardPosChangeSubscriptions,
+        query: onCardPosChangeSubscription,
       })
       .subscribe({
         next({ data }) {
@@ -111,7 +113,7 @@ class Board extends Component {
         },
       });
   };
-  async updateCard(updatedCard) {
+  updateCard(updatedCard) {
     // retrieve List By CardId, replace an entire singular list
     // updated card is giving back the NEW data
     if (updatedCard) {
@@ -150,13 +152,30 @@ class Board extends Component {
     }
   }
 
-  sortListByPos(arr) {
-    let sortedList = arr.sort((a, b) => a.pos - b.pos);
-    // this.setState({
-    //   data: {
-    //     lists: sortedList,
-    //   },
-    // });
+  //subscription cardAdded
+  subscribeToCardPosChange = (addCard) => {
+    client
+      .subscribe({
+        query: onCardAddedSubscription,
+      })
+      .subscribe({
+        next({ data }) {
+          addCard(data.cardAdded);
+        },
+      });
+  };
+  addCard(newCard) {
+    if (newCard) {
+      const { listId } = newCard;
+      let lists = [...this.state.lists];
+      for (let i = 0; i < lists.length; i++) {
+        if (lists[i].id === listId) {
+          lists[i].cards.push(newCard);
+          this.setState({ lists: lists });
+          break;
+        }
+      }
+    }
   }
 
   onColumnDrop(dropResult) {
@@ -202,35 +221,10 @@ class Board extends Component {
     //update Card - listId
     //update Card - pos
     //built in onDrop function executes for every list created -
-    // this makes sure it only executes on a valid change
+    //this makes sure it only executes on a valid change
     if (dropResult.addedIndex !== null && newCardPos !== null) {
       if (oldListPos === newListPos && oldCardPos === newCardPos) {
       } else {
-        // console.log(
-        //   "update-mutation",
-        //   cardId,
-        //   newListId,
-        //   newListPos,
-        //   newCardPos
-        // );
-        // this.props.updateCardPosMutation({
-        //   variables: {
-        //     cardId: cardId,
-        //     listId: newListId,
-        //     pos: newCardPos,
-        //   },
-        // });
-        // console.log(
-        //   "updating-state-lists",
-        //   "oldListPos",
-        //   oldListPos,
-        //   "oldCardPos",
-        //   oldCardPos,
-        //   "newListPos",
-        //   newListPos,
-        //   "newCardPos",
-        //   newCardPos
-        // );
         //update pos of all cards from oldList
         //.slice() creates a shallow copy that doesnt alter the original (state)
         let oldCards = this.state.lists[oldListPos].cards.slice();
@@ -269,12 +263,7 @@ class Board extends Component {
         oldCardPos: null,
       });
     }
-    // ****continue here
-    // console.log(listLeftId, oldListPos, dropResult);
-    // console.log(this.state);
   }
-
-  addCard() {}
 
   render() {
     // console.log(this.props.getListsQuery.getLists);
@@ -343,11 +332,7 @@ class Board extends Component {
                         </Draggable>
                       );
                     })}
-                    <form>
-                      <label onSubmit={this.addCard}>Add a new card!</label>
-                      <input placeholder="Description" />
-                      <button>Add</button>
-                    </form>
+                    <AddCard list={list} />
                   </Container>
                 </Draggable>
               );

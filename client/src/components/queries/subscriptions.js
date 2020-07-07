@@ -30,9 +30,20 @@ const onListAddedSubscription = gql`
   }
 `;
 
-const onCardPosChangeSubscriptions = gql`
+const onCardPosChangeSubscription = gql`
   subscription {
     onCardPosChange {
+      id
+      description
+      pos
+      listId
+    }
+  }
+`;
+
+const onCardAddedSubscription = gql`
+  subscription {
+    cardAdded {
       id
       description
       pos
@@ -44,5 +55,6 @@ const onCardPosChangeSubscriptions = gql`
 export {
   onListPosChangeSubscription,
   onListAddedSubscription,
-  onCardPosChangeSubscriptions,
+  onCardPosChangeSubscription,
+  onCardAddedSubscription,
 };
