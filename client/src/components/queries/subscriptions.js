@@ -52,9 +52,21 @@ const onCardAddedSubscription = gql`
   }
 `;
 
+const cardDeletedSubscription = gql`
+  subscription {
+    cardDeleted {
+      id
+      description
+      pos
+      listId
+    }
+  }
+`;
+
 export {
   onListPosChangeSubscription,
   onListAddedSubscription,
   onCardPosChangeSubscription,
   onCardAddedSubscription,
+  cardDeletedSubscription,
 };

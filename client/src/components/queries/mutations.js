@@ -51,7 +51,19 @@ const insertCardMutation = gql`
   }
 `;
 
+const deleteCardMutataion = gql`
+  mutation($cardId: String!) {
+    deleteCard(request: { cardId: $cardId }) {
+      id
+      description
+      pos
+      listId
+    }
+  }
+`;
+
 export {
+  deleteCardMutataion,
   updateListPosMutation,
   insertListMutation,
   updateCardPosMutation,

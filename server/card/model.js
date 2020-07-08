@@ -43,6 +43,15 @@ class Card {
       { new: true }
     ).exec();
   }
+
+  static deleteCard(cardId) {
+    return this.findOneAndDelete(
+      {
+        _id: Mongoose.mongo.ObjectID(cardId),
+      }
+      // { rawResult: true }
+    ).exec();
+  }
 }
 
 cardSchema.loadClass(Card);

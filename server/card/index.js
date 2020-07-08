@@ -18,8 +18,12 @@ const cardTypeDefs = gql`
   type Mutation {
     insertCard(request: insertCardInput): Card
     updateCardPos(request: updateCardPosInput): Card
+    deleteCard(request: deleteCardInput): Card
   }
 
+  input cardListInput {
+    listId: String!
+  }
   input insertCardInput {
     description: String!
     pos: Int!
@@ -30,8 +34,8 @@ const cardTypeDefs = gql`
     listId: String!
     pos: Int!
   }
-  input cardListInput {
-    listId: String!
+  input deleteCardInput {
+    cardId: String!
   }
 `;
 

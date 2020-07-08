@@ -13,12 +13,14 @@ import { getListsQuery } from "./queries/queries";
 import {
   updateListPosMutation,
   updateCardPosMutation,
+  deleteCardMutataion,
 } from "./queries/mutations";
 import {
   onListPosChangeSubscription,
   onListAddedSubscription,
   onCardPosChangeSubscription,
   onCardAddedSubscription,
+  cardDeletedSubscription,
 } from "./queries/subscriptions";
 
 class Board extends Component {
@@ -41,6 +43,8 @@ class Board extends Component {
     this.addList = this.addList.bind(this);
     this.updateCard = this.updateCard.bind(this);
     this.addCard = this.addCard.bind(this);
+    this.deleteCard = this.deleteCard.bind(this);
+    this.deleteCardSubscription = this.deleteCardSubscription.bind(this);
   }
 
   async componentDidMount() {
@@ -54,6 +58,7 @@ class Board extends Component {
       this.subscribeToListAdded(this.addList);
       this.subscribeToCardPosChange(this.updateCard);
       this.subscribeToCardAdded(this.addCard);
+      this.subscribeToCardDeleted(this.deleteCardSubscription);
     } catch (err) {
       console.error(err);
     }
@@ -115,9 +120,8 @@ class Board extends Component {
   };
   updateCard(updatedCard) {
     // retrieve List By CardId, replace an entire singular list
-    // updated card is giving back the NEW data
+    // updatedCard is giving back the NEW data
     if (updatedCard) {
-      console.log(updatedCard);
       const { id, listId, pos } = updatedCard;
       let lists = this.state.lists.slice();
       //find the old card - delete
@@ -126,9 +130,8 @@ class Board extends Component {
         let cards = list.cards;
         for (let j = 0; j < cards.length; j++) {
           let card = cards[j];
-          console.log(card.id, id);
           if (card.id === id) {
-            cards.splice(card.pos, 1);
+            cards.splice(j, 1);
             this.setState({ lists: lists });
             break;
           }
@@ -138,13 +141,7 @@ class Board extends Component {
       for (let i = 0; i < lists.length; i++) {
         let list = lists[i];
         if (listId === list.id) {
-          //   console.log(listId, list.id, pos, "state change");
-          console.log(pos, list.cards[pos], updatedCard);
-          if (list.cards[pos]) {
-            list.cards[pos] = updatedCard;
-          } else {
-            list.cards.push(updatedCard);
-          }
+          list.cards.splice(pos, 0, updatedCard);
           this.setState({ lists: lists });
           break;
         }
@@ -153,7 +150,7 @@ class Board extends Component {
   }
 
   //subscription cardAdded
-  subscribeToCardPosChange = (addCard) => {
+  subscribeToCardAdded = (addCard) => {
     client
       .subscribe({
         query: onCardAddedSubscription,
@@ -178,11 +175,48 @@ class Board extends Component {
     }
   }
 
+  //subscription cardDeleted
+  subscribeToCardDeleted = (deleteCardSubscription) => {
+    client
+      .subscribe({
+        query: cardDeletedSubscription,
+      })
+      .subscribe({
+        next({ data }) {
+          deleteCardSubscription(data.cardDeleted);
+        },
+      });
+  };
+  deleteCardSubscription(cardDeleted) {
+    if (cardDeleted) {
+      const cardId = cardDeleted.id;
+      const { listId } = cardDeleted;
+      let lists = [...this.state.lists];
+      for (let i = 0; i < lists.length; i++) {
+        let list = lists[i];
+        if (list.id === listId) {
+          let cards = list.cards;
+          for (let j = 0; j < cards.length; j++) {
+            let card = cards[j];
+            if (card.id === cardId) {
+              let cardPos = card.pos;
+              cards.splice(cardPos, 1);
+              this.setState({ lists: lists });
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+
   onColumnDrop(dropResult) {
     const { removedIndex, addedIndex } = dropResult;
     let lists = this.state.lists.slice();
     let list = lists.splice(removedIndex, 1);
     lists.splice(addedIndex, 0, list[0]);
+    //set state first for better rendering/ui experience for current user
+    this.setState({ lists: lists });
     for (let i = 0; i < lists.length; i++) {
       //   update pos value for all list elements
       if (lists[i].pos !== i) {
@@ -203,7 +237,7 @@ class Board extends Component {
     this.setState({ dragCardId, oldListPos: listPos, oldCardPos: index });
   }
 
-  onCardDrop(l, dropResult) {
+  async onCardDrop(l, dropResult) {
     // console.log("oncarddrop", dropResult.removedIndex, dropResult.addedIndex);
     if (dropResult.removedIndex !== null) {
       this.setState({ onDropRemovedPos: dropResult.removedIndex });
@@ -227,10 +261,11 @@ class Board extends Component {
       } else {
         //update pos of all cards from oldList
         //.slice() creates a shallow copy that doesnt alter the original (state)
-        let oldCards = this.state.lists[oldListPos].cards.slice();
+        let lists = this.state.lists.slice();
+        let oldCards = lists[oldListPos].cards;
         let currCard = oldCards.splice(oldCardPos, 1)[0];
         for (let i = oldCardPos; i < oldCards.length; i++) {
-          this.props.updateCardPosMutation({
+          await this.props.updateCardPosMutation({
             variables: {
               cardId: oldCards[i].id,
               listId: oldCards[i].listId,
@@ -239,12 +274,13 @@ class Board extends Component {
           });
         }
         //update pos of rest of cards in new list
-        let newCards = this.state.lists[newListPos].cards.slice();
-        if (newListId === currCard.listId) newCards = oldCards.slice();
+        let newCards = lists[newListPos].cards;
+        if (newListId === currCard.listId) newCards = oldCards;
         newCards.splice(newCardPos, 0, currCard);
+        this.setState({ lists: lists });
         //card pos changed within same list
         for (let i = newCardPos; i < newCards.length; i++) {
-          this.props.updateCardPosMutation({
+          await this.props.updateCardPosMutation({
             variables: {
               cardId: newCards[i].id,
               listId: newListId,
@@ -265,8 +301,37 @@ class Board extends Component {
     }
   }
 
+  //delete Card
+  async deleteCard(card, list) {
+    console.log("deleteCard", card, list);
+    const { id } = card;
+    const cardPos = card.pos;
+    const listPos = list.pos;
+    let lists = [...this.state.lists];
+    lists[listPos].cards.splice(cardPos, 1);
+    //delete card
+    this.props.deleteCardMutataion({
+      variables: {
+        cardId: id,
+      },
+    });
+    //update cardPos for everythign else
+    for (let i = cardPos; i < lists[listPos].cards.length; i++) {
+      let card = lists[listPos].cards[i];
+      await this.props.updateCardPosMutation({
+        variables: {
+          cardId: card.id,
+          listId: card.listId,
+          pos: i,
+        },
+      });
+      card.pos = i;
+    }
+    //set state for this user - better ui/ux for current user
+    this.setState({ lists: lists });
+  }
+
   render() {
-    // console.log(this.props.getListsQuery.getLists);
     return (
       <div className="card-scene">
         <AddList lists={this.state.lists} />
@@ -290,6 +355,7 @@ class Board extends Component {
                   <div className="card-column-header">
                     <span className="column-drag-handle">&#x2630;</span>
                     {list.title}
+                    <span className="del">&#x2421;</span>
                   </div>
                   <Container
                     groupName="list"
@@ -320,12 +386,20 @@ class Board extends Component {
                       className: "drop-preview",
                     }}
                     dropPlaceholderAnimationDuration={200}
+                    // dragBeginDelay={100}
                   >
                     {list.cards.map((card) => {
                       return (
                         <Draggable key={card.id + card.pos}>
                           <div className="card">
+                            <span
+                              className="del-card"
+                              onClick={() => this.deleteCard(card, list)}
+                            >
+                              &#x2421;
+                            </span>
                             <p>{card.description}</p>
+                            <p>cardId = {card.id}</p>
                             <p>pos = {card.pos}</p>
                             <p>listId = {card.listId}</p>
                           </div>
@@ -347,5 +421,6 @@ class Board extends Component {
 export default compose(
   graphql(getListsQuery, { name: "getListsQuery" }),
   graphql(updateListPosMutation, { name: "updateListPosMutation" }),
-  graphql(updateCardPosMutation, { name: "updateCardPosMutation" })
+  graphql(updateCardPosMutation, { name: "updateCardPosMutation" }),
+  graphql(deleteCardMutataion, { name: "deleteCardMutataion" })
 )(Board);

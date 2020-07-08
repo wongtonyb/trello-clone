@@ -40,7 +40,25 @@ const updateCardPos = async (__, args, cxt) => {
   }
 };
 
+const deleteCard = async (_, args, cxt) => {
+  try {
+    const cardId = args.request.cardId;
+
+    const card = await cxt.card.deleteCard(cardId);
+
+    cxt.publisher.publish(cxt.SUBSCRIPTION_CONSTANTS.CARD_DELETED, {
+      cardDeleted: card,
+    });
+
+    return card;
+  } catch (e) {
+    console.log("Error => ", e);
+    return null;
+  }
+};
+
 module.exports = {
+  deleteCard,
   insertCard,
   updateCardPos,
 };

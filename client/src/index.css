@@ -45,3 +45,15 @@ input::placeholder {
 button:hover {
   cursor: pointer;
 }
+
+.del {
+  position: relative;
+  left: 12rem;
+  cursor: pointer;
+}
+
+.del-card {
+  position: relative;
+  left: 14.5rem;
+  cursor: pointer;
+}

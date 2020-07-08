@@ -24,6 +24,7 @@ const typeDefs = gql`
     cardAdded: Card
     onListPosChange: List
     onCardPosChange: Card
+    cardDeleted: Card
   }
 
   ${cardTypeDefs}
@@ -50,10 +51,14 @@ const SubscriptionsResolvers = {
       subscribe: () =>
         pubsub.asyncIterator([SUBSCRIPTION_CONSTANTS.ON_CARD_POS_CHANGE]),
     },
+    cardDeleted: {
+      subscribe: () =>
+        pubsub.asyncIterator([SUBSCRIPTION_CONSTANTS.CARD_DELETED]),
+    },
   },
 };
 
-const customResolvers = {
+const nestedResolvers = {
   List: {
     cards(parent, args, cxt) {
       return cxt.card.getCardByListId(parent._id);
@@ -64,7 +69,7 @@ const customResolvers = {
 const resolvers = merge(
   cardResolvers,
   listResolvers,
-  customResolvers,
+  nestedResolvers,
   SubscriptionsResolvers
 );
 
