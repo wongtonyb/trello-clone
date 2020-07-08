@@ -24,6 +24,7 @@ class AddCard extends Component {
         },
       });
     }
+    this.setState({ description: "" });
   }
 
   render() {
@@ -33,6 +34,7 @@ class AddCard extends Component {
         <input
           type="text"
           placeholder="Description"
+          value={this.state.description}
           onChange={(e) => this.setState({ description: e.target.value })}
         />
         <button type="submit">Add</button>

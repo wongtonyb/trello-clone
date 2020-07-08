@@ -18,6 +18,7 @@ const listTypeDefs = gql`
   extend type Mutation {
     insertList(request: insertListInput): List
     updateListPos(request: updateListPosInput): List
+    deleteList(request: deleteListInput): List
   }
 
   input insertListInput {
@@ -28,6 +29,10 @@ const listTypeDefs = gql`
   input updateListPosInput {
     listId: String!
     pos: Int!
+  }
+
+  input deleteListInput {
+    listId: String!
   }
 `;
 

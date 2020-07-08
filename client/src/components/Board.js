@@ -14,6 +14,7 @@ import {
   updateListPosMutation,
   updateCardPosMutation,
   deleteCardMutataion,
+  deleteListMutation,
 } from "./queries/mutations";
 import {
   onListPosChangeSubscription,
@@ -21,6 +22,7 @@ import {
   onCardPosChangeSubscription,
   onCardAddedSubscription,
   cardDeletedSubscription,
+  listDeletedSubscription,
 } from "./queries/subscriptions";
 
 class Board extends Component {
@@ -45,6 +47,8 @@ class Board extends Component {
     this.addCard = this.addCard.bind(this);
     this.deleteCard = this.deleteCard.bind(this);
     this.deleteCardSubscription = this.deleteCardSubscription.bind(this);
+    this.deleteList = this.deleteList.bind(this);
+    this.deleteListSubscription = this.deleteListSubscription.bind(this);
   }
 
   async componentDidMount() {
@@ -59,11 +63,13 @@ class Board extends Component {
       this.subscribeToCardPosChange(this.updateCard);
       this.subscribeToCardAdded(this.addCard);
       this.subscribeToCardDeleted(this.deleteCardSubscription);
+      this.subscribeToListDeleted(this.deleteListSubscription);
     } catch (err) {
       console.error(err);
     }
   }
 
+  // ----------------SUBSCRIPTIONS-------------------------------------------
   //upon subscription hit, execute updateListPos
   subscribeToListPosChange = (updateListPos) => {
     client
@@ -98,7 +104,6 @@ class Board extends Component {
       });
   };
   addList(newList) {
-    console.log("addList Sub");
     if (newList) {
       let prevLists = this.state.lists;
       this.setState({
@@ -210,6 +215,34 @@ class Board extends Component {
     }
   }
 
+  //subscription listDeleted
+  subscribeToListDeleted = (deleteListSubscription) => {
+    client
+      .subscribe({
+        query: listDeletedSubscription,
+      })
+      .subscribe({
+        next({ data }) {
+          deleteListSubscription(data.listDeleted);
+        },
+      });
+  };
+  deleteListSubscription(listDeleted) {
+    if (listDeleted) {
+      //must use id instead of pos
+      //cause list is already deleted for current user,
+      //pos will remove more for that specifc user
+      const { id, pos } = listDeleted;
+      let lists = [...this.state.lists];
+      if (lists[pos] && lists[pos].id === id) {
+        lists.splice(pos, 1);
+      }
+      this.setState({ lists: lists });
+    }
+  }
+
+  // ---------------------------------------------------------------------
+
   onColumnDrop(dropResult) {
     const { removedIndex, addedIndex } = dropResult;
     let lists = this.state.lists.slice();
@@ -249,8 +282,8 @@ class Board extends Component {
     let newCardPos = this.state.onDropAddedPos;
     let oldListPos = this.state.oldListPos;
     let newListPos = l.pos;
-    let cardId = this.state.dragCardId;
-    let oldListId = this.state.dragLeaveListId;
+    // let cardId = this.state.dragCardId;
+    // let oldListId = this.state.dragLeaveListId;
     let newListId = this.state.dragEnterListId;
     //update Card - listId
     //update Card - pos
@@ -303,7 +336,6 @@ class Board extends Component {
 
   //delete Card
   async deleteCard(card, list) {
-    console.log("deleteCard", card, list);
     const { id } = card;
     const cardPos = card.pos;
     const listPos = list.pos;
@@ -331,6 +363,41 @@ class Board extends Component {
     this.setState({ lists: lists });
   }
 
+  //delete List
+  async deleteList(list) {
+    const { id, pos, cards } = list;
+    let lists = [...this.state.lists];
+    lists.splice(pos, 1);
+    this.setState({ lists: lists });
+    //delete list
+    await this.props.deleteListMutation({
+      variables: {
+        listId: id,
+      },
+    });
+    //delete cards in list
+    for (let i = 0; i < cards.length; i++) {
+      const { id } = cards[i];
+      this.props.deleteCardMutataion({
+        variables: {
+          cardId: id,
+        },
+      });
+    }
+    //update other lists' position
+    for (let i = pos; i < lists.length; i++) {
+      let list = lists[i];
+      this.props.updateListPosMutation({
+        variables: {
+          listId: list.id,
+          pos: i,
+        },
+      });
+    }
+  }
+
+  // ---------------------------- RENDER--------------------------------------
+
   render() {
     return (
       <div className="card-scene">
@@ -355,7 +422,9 @@ class Board extends Component {
                   <div className="card-column-header">
                     <span className="column-drag-handle">&#x2630;</span>
                     {list.title}
-                    <span className="del">&#x2421;</span>
+                    <span className="del" onClick={() => this.deleteList(list)}>
+                      &#x2421;
+                    </span>
                   </div>
                   <Container
                     groupName="list"
@@ -422,5 +491,6 @@ export default compose(
   graphql(getListsQuery, { name: "getListsQuery" }),
   graphql(updateListPosMutation, { name: "updateListPosMutation" }),
   graphql(updateCardPosMutation, { name: "updateCardPosMutation" }),
-  graphql(deleteCardMutataion, { name: "deleteCardMutataion" })
+  graphql(deleteCardMutataion, { name: "deleteCardMutataion" }),
+  graphql(deleteListMutation, { name: "deleteListMutation" })
 )(Board);

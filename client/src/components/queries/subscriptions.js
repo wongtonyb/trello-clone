@@ -63,10 +63,21 @@ const cardDeletedSubscription = gql`
   }
 `;
 
+const listDeletedSubscription = gql`
+  subscription {
+    listDeleted {
+      id
+      title
+      pos
+    }
+  }
+`;
+
 export {
   onListPosChangeSubscription,
   onListAddedSubscription,
   onCardPosChangeSubscription,
   onCardAddedSubscription,
   cardDeletedSubscription,
+  listDeletedSubscription,
 };

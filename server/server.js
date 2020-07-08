@@ -25,6 +25,7 @@ const typeDefs = gql`
     onListPosChange: List
     onCardPosChange: Card
     cardDeleted: Card
+    listDeleted: List
   }
 
   ${cardTypeDefs}
@@ -54,6 +55,10 @@ const SubscriptionsResolvers = {
     cardDeleted: {
       subscribe: () =>
         pubsub.asyncIterator([SUBSCRIPTION_CONSTANTS.CARD_DELETED]),
+    },
+    listDeleted: {
+      subscribe: () =>
+        pubsub.asyncIterator([SUBSCRIPTION_CONSTANTS.LIST_DELETED]),
     },
   },
 };

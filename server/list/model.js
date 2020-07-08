@@ -46,6 +46,12 @@ class List {
       }
     ).exec();
   }
+
+  static deleteList(listId) {
+    return this.findOneAndDelete({
+      _id: Mongoose.mongo.ObjectID(listId),
+    }).exec();
+  }
 }
 
 listSchema.loadClass(List);

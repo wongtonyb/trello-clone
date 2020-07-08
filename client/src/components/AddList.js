@@ -20,6 +20,7 @@ class AddList extends Component {
         pos: pos,
       },
     });
+    this.setState({ title: "" });
   }
 
   render() {
@@ -29,6 +30,7 @@ class AddList extends Component {
         <input
           type="text"
           placeholder="Title"
+          value={this.state.title}
           onChange={(e) => this.setState({ title: e.target.value })}
         />
         <button>Add</button>

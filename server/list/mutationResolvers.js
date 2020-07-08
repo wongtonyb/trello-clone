@@ -1,16 +1,17 @@
 const insertList = async (__, args, cxt) => {
   try {
+    //inputs
     const listInfo = {
       title: args.request.title,
       pos: args.request.pos,
     };
-
+    //mongodb - mongoose method
     const list = await cxt.list.insertList(listInfo);
-
+    //what to return subscription
     cxt.publisher.publish(cxt.SUBSCRIPTION_CONSTANTS.LIST_ADDED, {
-      listAdded: list,
+      listAdded: list, //match subscription type definition
     });
-
+    //return database obj
     return list;
   } catch (e) {
     console.log(e);
@@ -36,7 +37,25 @@ const updateListPos = async (__, args, cxt) => {
   }
 };
 
+const deleteList = async (_, args, cxt) => {
+  try {
+    const listId = args.request.listId;
+
+    const list = await cxt.list.deleteList(listId);
+
+    cxt.publisher.publish(cxt.SUBSCRIPTION_CONSTANTS.LIST_DELETED, {
+      listDeleted: list,
+    });
+
+    return list;
+  } catch (e) {
+    console.log("Error =>", e);
+    return null;
+  }
+};
+
 module.exports = {
   insertList,
   updateListPos,
+  deleteList,
 };
