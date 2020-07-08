@@ -4,7 +4,7 @@ This Repository demonstrates a simplified Trello Clone using React and GraphQL.
 
 ### Demo
 
-![demo](demo.gif)
+![demo](trello-clone.gif)
 
 ### Features
 
@@ -33,7 +33,7 @@ Terminal One
 ```
   cd server
   npm install
-  npm run dev
+  node server
 ```
 
 Terminal Two

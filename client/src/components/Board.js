@@ -368,6 +368,7 @@ class Board extends Component {
     const { id, pos, cards } = list;
     let lists = [...this.state.lists];
     lists.splice(pos, 1);
+    console.log(lists);
     this.setState({ lists: lists });
     //delete list
     await this.props.deleteListMutation({
@@ -470,7 +471,6 @@ class Board extends Component {
                             <p>{card.description}</p>
                             <p>cardId = {card.id}</p>
                             <p>pos = {card.pos}</p>
-                            <p>listId = {card.listId}</p>
                           </div>
                         </Draggable>
                       );

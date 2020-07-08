@@ -13,7 +13,7 @@ class AddList extends Component {
 
   addList(e) {
     e.preventDefault();
-    let pos = this.props.lists[this.props.lists.length - 1].pos + 1;
+    let pos = this.props.lists.length;
     this.props.insertListMutation({
       variables: {
         title: this.state.title,
