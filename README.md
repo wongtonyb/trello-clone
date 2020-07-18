@@ -1,6 +1,6 @@
 ## Building a Trello Clone using React and GraphQL
 
-This Repository demonstrates a simplified Trello Clone using React and GraphQL.
+This repository portrays a basic clone of the popular collaborative project management tool, Trello, using React and GraphQL.
 
 ### Demo
 
