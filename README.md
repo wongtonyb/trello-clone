@@ -9,9 +9,9 @@ This repository portrays a basic clone of the popular collaborative project mana
 ### Features
 
 - Add/Delete Lists and Cards
-- Repositioning of Lists and Cards
 - Trello like Drag and Drop with React Smooth Dnd
-- Persistance tracking on lists' and card's position (will always remember it's placement)
+- Auto repositioning of Lists and Cards
+- Persistence positionings of Lists and Cards
 - GraphQL Subscriptions enabled for real time cross-user collaboration
 
 ### Tech Stack
